@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">MotivationWidget</string>
+
+    <string-array name="quotes">
+        <item>One of the great ironies of life is this: he or she who serves almost always benefits more than he or she who is served.|Gordon B. Hinckley</item>
+        <item>The best way to cheer yourself up is to try to cheer somebody else up.|Mark Twain</item>
+        <item>Be somebody who makes everybody feel like a somebody.|Kid President (Robby Novak)</item>
+        <item>Freedom is never given; it is won.|A. Philip Randolph</item>
+        <item>Give your hands to serve and your hearts to love.|Mother Teresa</item>
+        <item>Everybody can be great. Because anybody can serve.|Martin Luther King, Jr.</item>
+        <item>Success is not just the crowning moment, the spiking of the ball in the end zone or the raising of the flag on the summit. It is the whole process of reaching for a goal and, sometimes, it begins with failure.|Erik Weihenmayer</item>
+        <item>Still, like air, I rise.|Maya Angelou</item>
+        <item>Our greatest glory is not in never falling, but in rising every time we fall.|Confucius </item>
+        <item>Consult not your fears, but your hopes and your dreams.|Pope John XXIII </item>
+        <item>We always kept in our hearts the most noble, beautiful feeling that sets human beings apart: hope.|Manel Loureiro</item>
+        <item>Where hope grows, miracles blossom.|Elna Rae</item>
+    </string-array>
+</resources>
