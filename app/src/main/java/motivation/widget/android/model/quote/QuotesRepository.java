@@ -1,8 +1,20 @@
 package motivation.widget.android.model.quote;
 
 
-public interface QuotesRepository {
-    UserNextQuote loadUserNextQuote();
+import java.util.Set;
 
-    void updateNextQuote(Quote quote);
+public interface QuotesRepository {
+    NextQuoteProvider loadUserNextQuote();
+
+    void updateNextQuote(NextQuote nextQuote);
+
+    Quotes loadAllQuotes();
+
+    void saveLastSeenQuoteIndex(int index);
+
+    int getLastSeenQuoteIndex();
+
+    Set<Integer> loadFavourites();
+
+    void saveFavourites(Set<Integer> favourites);
 }

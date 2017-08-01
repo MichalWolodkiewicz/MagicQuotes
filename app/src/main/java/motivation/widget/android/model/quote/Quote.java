@@ -1,33 +1,26 @@
 package motivation.widget.android.model.quote;
 
-
 public class Quote {
+    private final int index;
+    private final String text;
+    private final String author;
 
-    Quote(String quote, String author, int index, long createTime) {
-        this.quote = quote;
-        this.author = author;
+    Quote(int index, String text, String author) {
+
         this.index = index;
-        this.createTime = createTime;
-    }
-
-    private String quote;
-    private String author;
-    private int index;
-    private long createTime;
-
-    public String getQuote() {
-        return quote;
-    }
-
-    public String getAuthor() {
-        return author;
+        this.text = text;
+        this.author = author;
     }
 
     public int getIndex() {
         return index;
     }
 
-    public long getCreateTime() {
-        return createTime;
+    public String getText() {
+        return text;
+    }
+
+    public String getAuthor() {
+        return author;
     }
 }

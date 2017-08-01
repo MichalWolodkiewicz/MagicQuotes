@@ -9,8 +9,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import motivation.widget.android.model.quote.Quote;
-import motivation.widget.android.model.quote.UserNextQuote;
+import motivation.widget.android.model.quote.NextQuote;
+import motivation.widget.android.model.quote.NextQuoteProvider;
 import motivation.widget.android.repository.QuotesRepositoryImpl;
 
 public class MotivationWidgetReceiver extends AppWidgetProvider {
@@ -36,15 +36,15 @@ public class MotivationWidgetReceiver extends AppWidgetProvider {
         super.onUpdate(context, appWidgetManager, appWidgetIds);
         Log.i("WIDGET_TAG", "onUpdate");
         final QuotesRepositoryImpl quotesRepository = new QuotesRepositoryImpl(context.getApplicationContext());
-        final UserNextQuote userNextQuote = quotesRepository.loadUserNextQuote();
+        final NextQuoteProvider nextQuoteProvider = quotesRepository.loadUserNextQuote();
         final RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.motivation_widget);
-        final Quote quote = userNextQuote.getNextQuote();
-        views.setTextViewText(R.id.author, quote.getAuthor());
-        views.setTextViewText(R.id.quote, quote.getQuote());
+        final NextQuote nextQuote = nextQuoteProvider.getNextQuote();
+        views.setTextViewText(R.id.author, nextQuote.getAuthor());
+        views.setTextViewText(R.id.quote, nextQuote.getQuote());
         views.setOnClickPendingIntent(R.id.widget_container, getOnClickPendingIntent(context, appWidgetIds));
-        if (userNextQuote.isTimeForNextQuote()) {
+        if (nextQuoteProvider.isTimeForNextQuote()) {
             appWidgetManager.updateAppWidget(appWidgetIds, views);
-            quotesRepository.updateNextQuote(quote);
+            quotesRepository.updateNextQuote(nextQuote);
         }
     }
 
