@@ -3,16 +3,16 @@ package motivation.widget.android.model.quote;
 
 import android.util.Log;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 public class Quotes {
 
-    private Set<Quote> quotes;
+    private List<Quote> quotes;
 
     public Quotes(String[] rawQuotes) {
-        this.quotes = new LinkedHashSet<>(rawQuotes.length);
+        this.quotes = new ArrayList<>(rawQuotes.length);
         for (int i = 0; i < rawQuotes.length; i++) {
             try {
                 final String[] quote = rawQuotes[i].split("\\|");
@@ -33,5 +33,9 @@ public class Quotes {
 
     public int count() {
         return quotes.size();
+    }
+
+    public Quote get(int position) {
+        return quotes.get(position);
     }
 }

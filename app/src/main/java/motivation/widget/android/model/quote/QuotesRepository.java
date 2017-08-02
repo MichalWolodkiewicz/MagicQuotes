@@ -17,4 +17,6 @@ public interface QuotesRepository {
     Set<Integer> loadFavourites();
 
     void saveFavourites(Set<Integer> favourites);
+
+    Quotes loadFavouritesQuotes();
 }

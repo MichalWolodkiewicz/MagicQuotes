@@ -66,6 +66,17 @@ public class QuotesRepositoryImpl implements QuotesRepository {
     @Override
     public void saveFavourites(Set<Integer> favourites) {
         String json = new Gson().toJson(favourites);
-        sharedPreferences.edit().putString("favourites", json);
+        sharedPreferences.edit().putString("favourites", json).apply();
+    }
+
+    @Override
+    public Quotes loadFavouritesQuotes() {
+        Set<Integer> indexes = loadFavourites();
+        String[] rawQuotes = new String[indexes.size()];
+        int i = 0;
+        for (Integer index : indexes) {
+            rawQuotes[i++] = quotesArray[index];
+        }
+        return new Quotes(rawQuotes);
     }
 }
