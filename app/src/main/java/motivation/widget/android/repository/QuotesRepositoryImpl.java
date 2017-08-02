@@ -4,8 +4,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import motivation.widget.android.R;
@@ -57,13 +58,9 @@ public class QuotesRepositoryImpl implements QuotesRepository {
 
     @Override
     public Set<Integer> loadFavourites() {
-        final HashSet<Integer> favourites = new HashSet<>();
-        for (int i = 0; i < 200; i++) {
-            if (i % 2 == 0) {
-                favourites.add(i);
-            }
-        }
-        return favourites;
+        String json = sharedPreferences.getString("favourites", "[]");
+        return new Gson().fromJson(json, new TypeToken<LinkedHashSet<Integer>>() {
+        }.getType());
     }
 
     @Override

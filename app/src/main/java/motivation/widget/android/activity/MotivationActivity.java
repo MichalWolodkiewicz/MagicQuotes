@@ -111,8 +111,13 @@ public class MotivationActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             isFavourite = !isFavourite;
-            int imageResource = isFavourite ? android.R.drawable.star_on : android.R.drawable.star_off;
-            ((ImageView)v).setImageResource(imageResource);
+            if(isFavourite) {
+                ((ImageView)v).setImageResource(android.R.drawable.star_on);
+                favourites.add(quoteIndex);
+            } else {
+                ((ImageView)v).setImageResource(android.R.drawable.star_on);
+                favourites.remove(quoteIndex);
+            }
         }
     }
 }
