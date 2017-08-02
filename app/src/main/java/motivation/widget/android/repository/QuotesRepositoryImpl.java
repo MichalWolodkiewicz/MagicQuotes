@@ -3,6 +3,8 @@ package motivation.widget.android.repository;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.google.gson.Gson;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -56,15 +58,17 @@ public class QuotesRepositoryImpl implements QuotesRepository {
     @Override
     public Set<Integer> loadFavourites() {
         final HashSet<Integer> favourites = new HashSet<>();
-        favourites.add(100);
-        favourites.add(102);
-        favourites.add(104);
-        favourites.add(106);
+        for (int i = 0; i < 200; i++) {
+            if (i % 2 == 0) {
+                favourites.add(i);
+            }
+        }
         return favourites;
     }
 
     @Override
     public void saveFavourites(Set<Integer> favourites) {
-
+        String json = new Gson().toJson(favourites);
+        sharedPreferences.edit().putString("favourites", json);
     }
 }

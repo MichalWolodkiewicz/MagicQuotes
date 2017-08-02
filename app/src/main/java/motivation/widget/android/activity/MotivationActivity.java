@@ -76,7 +76,10 @@ public class MotivationActivity extends AppCompatActivity {
         ((TextView) quoteView.findViewById(R.id.quote)).setText(quote.getText());
         ((TextView) quoteView.findViewById(R.id.author)).setText(quote.getAuthor());
         int imageResource = favourites.contains(quote.getIndex()) ? android.R.drawable.star_on : android.R.drawable.star_off;
-        ((ImageView) quoteView.findViewById(R.id.favouriteIcon)).setImageResource(imageResource);
+        ImageView favouriteIcon = (ImageView) quoteView.findViewById(R.id.favouriteIcon);
+        favouriteIcon.setOnClickListener(new OnFavouriteIconClickListener(quote.getIndex(), favourites.contains(quote.getIndex())));
+        favouriteIcon.setImageResource(imageResource);
+
         return quoteView;
     }
 
@@ -93,5 +96,23 @@ public class MotivationActivity extends AppCompatActivity {
 
     private void updateQuotesProgressBar() {
         quotesProgressBar.setProgress(currentQuoteIndex);
+    }
+
+    private class OnFavouriteIconClickListener implements View.OnClickListener {
+
+        private int quoteIndex;
+        private boolean isFavourite;
+
+        OnFavouriteIconClickListener(int quoteIndex, boolean isFavourite) {
+            this.quoteIndex = quoteIndex;
+            this.isFavourite = isFavourite;
+        }
+
+        @Override
+        public void onClick(View v) {
+            isFavourite = !isFavourite;
+            int imageResource = isFavourite ? android.R.drawable.star_on : android.R.drawable.star_off;
+            ((ImageView)v).setImageResource(imageResource);
+        }
     }
 }
