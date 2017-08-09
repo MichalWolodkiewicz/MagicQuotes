@@ -25,6 +25,20 @@ class QuotesFragmentPagerAdapter extends FragmentStatePagerAdapter {
     }
 
     @Override
+    public CharSequence getPageTitle(int position) {
+        CharSequence title = null;
+        switch (position) {
+            case 0:
+                title = "Quotes";
+                break;
+            case 1:
+                title = "Favourites";
+                break;
+        }
+        return title;
+    }
+
+    @Override
     public int getCount() {
         return 2;
     }

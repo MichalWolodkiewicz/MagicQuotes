@@ -1,6 +1,7 @@
 package motivation.widget.android.activity;
 
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
@@ -14,5 +15,7 @@ public class MotivationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_motivation);
         ViewPager pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(new QuotesFragmentPagerAdapter(getSupportFragmentManager()));
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.quotesTab);
+        tabLayout.setupWithViewPager(pager);
     }
 }
