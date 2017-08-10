@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -42,7 +43,12 @@ public class QuotesRepositoryImpl implements QuotesRepository {
     }
 
     @Override
-    public Quotes loadAllQuotes() {
+    public Quotes loadAllFreeUserQuotes() {
+        return new Quotes(Arrays.copyOfRange(quotesArray, 0, quotesArray.length / 200));
+    }
+
+    @Override
+    public Quotes loadAllPremiumUserQuotes() {
         return new Quotes(quotesArray);
     }
 

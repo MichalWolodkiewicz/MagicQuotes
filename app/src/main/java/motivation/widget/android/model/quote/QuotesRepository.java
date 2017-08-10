@@ -8,7 +8,9 @@ public interface QuotesRepository {
 
     void updateNextQuote(NextQuote nextQuote);
 
-    Quotes loadAllQuotes();
+    Quotes loadAllFreeUserQuotes();
+
+    Quotes loadAllPremiumUserQuotes();
 
     void saveLastSeenQuoteIndex(int index);
 

@@ -1,5 +1,6 @@
 package motivation.widget.android.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -20,6 +21,7 @@ import motivation.widget.android.R;
 import motivation.widget.android.model.quote.Quote;
 import motivation.widget.android.model.quote.Quotes;
 import motivation.widget.android.repository.QuotesRepositoryImpl;
+import motivation.widget.android.repository.UserRepository;
 
 
 public class QuotesScrollFragment extends Fragment {
@@ -34,6 +36,7 @@ public class QuotesScrollFragment extends Fragment {
     private int currentQuoteIndex;
     private Set<Integer> favourites;
     private boolean wasInitialized;
+    private UserRepository userRepository;
 
     @Nullable
     @Override
@@ -44,10 +47,15 @@ public class QuotesScrollFragment extends Fragment {
         viewFlipper.setOutAnimation(getActivity(), android.R.anim.fade_out);
         quotesProgressBar = (ProgressBar) fragmentView.findViewById(R.id.quotesProgress);
         quotesRepository = new QuotesRepositoryImpl(getActivity());
-        quotes = quotesRepository.loadAllQuotes();
+        userRepository = new UserRepository(getActivity());
+        if (userRepository.isPremiumUser()) {
+            quotes = quotesRepository.loadAllPremiumUserQuotes();
+        } else {
+            quotes = quotesRepository.loadAllFreeUserQuotes();
+        }
         currentQuoteIndex = quotesRepository.getLastSeenQuoteIndex();
         quoteIterator = quotes.getQuotesIteratorWithOffset(currentQuoteIndex);
-        quotesProgressBar.setMax(quotes.count() - 1);
+        quotesProgressBar.setMax(quotes.count());
         favourites = quotesRepository.loadFavourites();
         layoutInflater = LayoutInflater.from(getActivity());
         loadNextQuotes();
@@ -55,6 +63,27 @@ public class QuotesScrollFragment extends Fragment {
         fragmentView.findViewById(R.id.nextQuote).setOnClickListener(new NextQuoteButtonOnClickListener());
         wasInitialized = true;
         return fragmentView;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        quotesRepository.saveLastSeenQuoteIndex(currentQuoteIndex);
+        quotesRepository.saveFavourites(favourites);
+    }
+
+    private void loadNextQuotes() {
+        viewFlipper.removeAllViews();
+        int currentIndex = 0;
+        while (quoteIterator.hasNext() && currentIndex++ < 5) {
+            final Quote quote = quoteIterator.next();
+            viewFlipper.addView(createQuoteView(quote));
+        }
+        if (!quoteIterator.hasNext()) {
+            currentQuoteIndex = 0;
+            quoteIterator = quotes.getQuotesIteratorWithOffset(0);
+            onQuotesLstEnd();
+        }
     }
 
     @Override
@@ -66,17 +95,10 @@ public class QuotesScrollFragment extends Fragment {
         }
     }
 
-    private void loadNextQuotes() {
-        viewFlipper.removeAllViews();
-        int currentIndex = 0;
-        while (quoteIterator.hasNext() && currentIndex++ < 5) {
-            Log.d(TAG, "Loading more quotes to flipper");
-            final Quote quote = quoteIterator.next();
-            viewFlipper.addView(createQuoteView(quote));
-        }
-        if (!quoteIterator.hasNext()) {
-            currentQuoteIndex = 0;
-            quoteIterator = quotes.getQuotesIteratorWithOffset(0);
+    private void onQuotesLstEnd() {
+        if (!userRepository.hasBeenAskedToBuyPremium()) {
+            userRepository.markHasBeenAskedToBuyPremium();
+            startActivity(new Intent(getActivity(), AskToBuyPremiumActivity.class));
         }
     }
 
@@ -93,17 +115,18 @@ public class QuotesScrollFragment extends Fragment {
 
     private void showNextQuote() {
         if (viewFlipper.getDisplayedChild() == viewFlipper.getChildCount() - 1) {
-            loadNextQuotes();
             ++currentQuoteIndex;
+            loadNextQuotes();
         } else {
             viewFlipper.showNext();
             ++currentQuoteIndex;
-            updateQuotesProgressBar();
         }
+        updateQuotesProgressBar();
     }
 
     private void updateQuotesProgressBar() {
-        quotesProgressBar.setProgress(currentQuoteIndex);
+        Log.i(TAG, "quotes list iteration position " + (currentQuoteIndex + 1) + "/" + quotes.count());
+        quotesProgressBar.setProgress(currentQuoteIndex + 1);
     }
 
     private class OnFavouriteIconClickListener implements View.OnClickListener {
