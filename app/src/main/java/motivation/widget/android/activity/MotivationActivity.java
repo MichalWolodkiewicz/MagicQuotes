@@ -9,14 +9,12 @@ import motivation.widget.android.R;
 
 public class MotivationActivity extends AppCompatActivity {
 
-    private QuotesFragmentPagerAdapter quotesFragmentPagerAdapter;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_motivation);
         ViewPager pager = (ViewPager) findViewById(R.id.pager);
-        quotesFragmentPagerAdapter = new QuotesFragmentPagerAdapter(getSupportFragmentManager());
+        QuotesFragmentPagerAdapter quotesFragmentPagerAdapter = new QuotesFragmentPagerAdapter(getSupportFragmentManager());
         pager.setAdapter(quotesFragmentPagerAdapter);
         TabLayout tabLayout = (TabLayout) findViewById(R.id.quotesTab);
         tabLayout.setupWithViewPager(pager);

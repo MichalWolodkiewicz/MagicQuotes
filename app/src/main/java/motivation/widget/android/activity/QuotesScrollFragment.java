@@ -1,7 +1,9 @@
 package motivation.widget.android.activity;
 
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -11,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.ViewFlipper;
 
@@ -18,6 +21,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import motivation.widget.android.R;
+import motivation.widget.android.activity.view.UserGuideRelativeLayout;
 import motivation.widget.android.model.quote.Quote;
 import motivation.widget.android.model.quote.Quotes;
 import motivation.widget.android.repository.QuotesRepositoryImpl;
@@ -37,6 +41,7 @@ public class QuotesScrollFragment extends Fragment {
     private Set<Integer> favourites;
     private boolean wasInitialized;
     private UserRepository userRepository;
+    private RelativeLayout rootView;
 
     @Nullable
     @Override
@@ -46,6 +51,7 @@ public class QuotesScrollFragment extends Fragment {
         viewFlipper.setInAnimation(getActivity(), android.R.anim.fade_in);
         viewFlipper.setOutAnimation(getActivity(), android.R.anim.fade_out);
         quotesProgressBar = (ProgressBar) fragmentView.findViewById(R.id.quotesProgress);
+        rootView = (RelativeLayout) fragmentView.findViewById(R.id.quotes_list_fragment);
         quotesRepository = new QuotesRepositoryImpl(getActivity());
         userRepository = new UserRepository(getActivity());
         if (userRepository.isPremiumUser()) {
@@ -66,6 +72,45 @@ public class QuotesScrollFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (!userRepository.hasUserSeenFirstTimeTips()) {
+            userRepository.setUserHasSeenFirstTimeTips();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    addUserTipView();
+                }
+            }, 2000);
+        }
+    }
+
+    private void addUserTipView() {
+        RelativeLayout activityRootView = (RelativeLayout) getActivity().findViewById(R.id.activity_motivation);
+        final UserGuideRelativeLayout userGuideView = (UserGuideRelativeLayout) getActivity().getLayoutInflater().inflate(R.layout.favourite_tip, activityRootView, false);
+        ImageView favouriteIconView = (ImageView) viewFlipper.getChildAt(0).findViewById(R.id.favouriteIcon);
+        Rect favouriteIconPosition = getFavouriteCircleRectRelativeTo(favouriteIconView, activityRootView);
+        userGuideView.setFavouriteCircleCenter(favouriteIconPosition.centerX(), favouriteIconPosition.centerY());
+        userGuideView.findViewById(R.id.gotItButton).setOnClickListener(new GotItButtonClickListener(activityRootView, userGuideView));
+        activityRootView.addView(userGuideView);
+    }
+
+    private Rect getFavouriteCircleRectRelativeTo(ImageView favouriteIconView, RelativeLayout activityRootView) {
+        int activityHorizontalMargin = getResources().getDimensionPixelSize(R.dimen.activity_horizontal_margin);
+        int activityVerticalMargin = getResources().getDimensionPixelSize(R.dimen.activity_vertical_margin);
+        int[] circleScreenLocation = new int[2];
+        favouriteIconView.getLocationOnScreen(circleScreenLocation);
+        int[] activityScreenLocation = new int[2];
+        activityRootView.getLocationOnScreen(activityScreenLocation);
+        Rect rect = new Rect(
+                circleScreenLocation[0] - activityHorizontalMargin,
+                circleScreenLocation[1] - activityScreenLocation[1] - activityVerticalMargin,
+                circleScreenLocation[0] + favouriteIconView.getWidth() - activityHorizontalMargin,
+                circleScreenLocation[1] + favouriteIconView.getHeight() - activityScreenLocation[1] - activityVerticalMargin);
+        return rect;
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
         quotesRepository.saveLastSeenQuoteIndex(currentQuoteIndex);
@@ -82,7 +127,7 @@ public class QuotesScrollFragment extends Fragment {
         if (!quoteIterator.hasNext()) {
             currentQuoteIndex = 0;
             quoteIterator = quotes.getQuotesIteratorWithOffset(0);
-            onQuotesLstEnd();
+            onQuotesLastEnd();
         }
     }
 
@@ -95,7 +140,7 @@ public class QuotesScrollFragment extends Fragment {
         }
     }
 
-    private void onQuotesLstEnd() {
+    private void onQuotesLastEnd() {
         if (!userRepository.hasBeenAskedToBuyPremium()) {
             userRepository.markHasBeenAskedToBuyPremium();
             startActivity(new Intent(getActivity(), AskToBuyPremiumActivity.class));
@@ -156,6 +201,23 @@ public class QuotesScrollFragment extends Fragment {
         @Override
         public void onClick(View v) {
             showNextQuote();
+        }
+    }
+
+    private class GotItButtonClickListener implements View.OnClickListener {
+        private final RelativeLayout activityRoot;
+        private final RelativeLayout userGuideView;
+
+        GotItButtonClickListener(RelativeLayout activityRoot, RelativeLayout userGuideView) {
+            this.activityRoot = activityRoot;
+            this.userGuideView = userGuideView;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (activityRoot != null && userGuideView != null) {
+                activityRoot.removeView(userGuideView);
+            }
         }
     }
 }

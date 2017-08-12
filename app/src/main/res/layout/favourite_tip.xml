@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<motivation.widget.android.activity.view.UserGuideRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/activity_user_guide_activity"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:alpha="0.8"
+    android:clickable="true">
+
+    <TextView
+        android:padding="@dimen/add_to_favourites_tip_padding"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:text="@string/add_to_favourites_tip"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="@dimen/add_to_favourites_tip_margin_top"/>
+
+    <Button
+        android:id="@+id/gotItButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/gotIt"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/favourite_tip_bottom_margin"/>
+
+</motivation.widget.android.activity.view.UserGuideRelativeLayout>

@@ -27,4 +27,12 @@ public class UserRepository {
     public void markHasBeenAskedToBuyPremium() {
         userPreferences.edit().putBoolean("hasBeenAskedToBuyPremium", true).apply();
     }
+
+    public boolean hasUserSeenFirstTimeTips() {
+        return userPreferences.getBoolean("hasUserSeenFirstTimeTips", false);
+    }
+
+    public void setUserHasSeenFirstTimeTips() {
+        userPreferences.edit().putBoolean("hasUserSeenFirstTimeTips", true).apply();
+    }
 }

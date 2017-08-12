@@ -5,4 +5,8 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="quoteAuthorVerticalDistance">10dp</dimen>
+    <dimen name="favourite_circle_diameter">50dp</dimen>
+    <dimen name="add_to_favourites_tip_margin_top">40dp</dimen>
+    <dimen name="favourite_tip_bottom_margin">50dp</dimen>
+    <dimen name="add_to_favourites_tip_padding">5dp</dimen>
 </resources>

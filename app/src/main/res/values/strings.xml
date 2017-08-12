@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Magic quotes</string>
+    <string name="add_to_favourites_tip">Click on the star to add quote to favourites.\nFavourites can be displayed later using app widget.</string>
+    <string name="gotIt">Got it.</string>
 
     <string-array name="quotes">
         <item>One of the great ironies of life is this: he or she who serves almost always benefits more than he or she who is served.|Gordon B. Hinckley</item>
