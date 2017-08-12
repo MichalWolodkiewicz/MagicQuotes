@@ -2,6 +2,11 @@
     <string name="app_name">Magic quotes</string>
     <string name="add_to_favourites_tip">Click on the star to add quote to favourites.\nFavourites can be displayed later using app widget.</string>
     <string name="gotIt">Got it.</string>
+    <string name="purchase_premium_accept_text">update</string>
+    <string name="purchase_premium_dissmis_text">no thanks</string>
+    <string name="ask_for_premium_purchase">Do you want to get quotes extra pack. 2000 more quotes will be available.</string>
+    <string name="upgrade_to_premium_benefits">Upgrade to premium to gain access to extra 2000 quotes pack.</string>
+    <string name="purchase_premium_quotes_button">Purchase now</string>
 
     <string-array name="quotes">
         <item>One of the great ironies of life is this: he or she who serves almost always benefits more than he or she who is served.|Gordon B. Hinckley</item>

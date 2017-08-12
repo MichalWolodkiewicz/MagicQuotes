@@ -1,11 +1,13 @@
 package motivation.widget.android.activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,11 +28,12 @@ import motivation.widget.android.model.quote.Quote;
 import motivation.widget.android.model.quote.Quotes;
 import motivation.widget.android.repository.QuotesRepositoryImpl;
 import motivation.widget.android.repository.UserRepository;
+import motivation.widget.android.util.CommonValues;
 
 
 public class QuotesScrollFragment extends Fragment {
 
-    private static final String TAG = "MOTIVATION";
+    private static final int UPDATE_TO_PREMIUM_REQUEST_CODE = 1234;
     private ViewFlipper viewFlipper;
     private ProgressBar quotesProgressBar;
     private Quotes quotes;
@@ -41,7 +44,6 @@ public class QuotesScrollFragment extends Fragment {
     private Set<Integer> favourites;
     private boolean wasInitialized;
     private UserRepository userRepository;
-    private RelativeLayout rootView;
 
     @Nullable
     @Override
@@ -51,7 +53,6 @@ public class QuotesScrollFragment extends Fragment {
         viewFlipper.setInAnimation(getActivity(), android.R.anim.fade_in);
         viewFlipper.setOutAnimation(getActivity(), android.R.anim.fade_out);
         quotesProgressBar = (ProgressBar) fragmentView.findViewById(R.id.quotesProgress);
-        rootView = (RelativeLayout) fragmentView.findViewById(R.id.quotes_list_fragment);
         quotesRepository = new QuotesRepositoryImpl(getActivity());
         userRepository = new UserRepository(getActivity());
         if (userRepository.isPremiumUser()) {
@@ -102,12 +103,11 @@ public class QuotesScrollFragment extends Fragment {
         favouriteIconView.getLocationOnScreen(circleScreenLocation);
         int[] activityScreenLocation = new int[2];
         activityRootView.getLocationOnScreen(activityScreenLocation);
-        Rect rect = new Rect(
+        return new Rect(
                 circleScreenLocation[0] - activityHorizontalMargin,
                 circleScreenLocation[1] - activityScreenLocation[1] - activityVerticalMargin,
                 circleScreenLocation[0] + favouriteIconView.getWidth() - activityHorizontalMargin,
                 circleScreenLocation[1] + favouriteIconView.getHeight() - activityScreenLocation[1] - activityVerticalMargin);
-        return rect;
     }
 
     @Override
@@ -140,11 +140,33 @@ public class QuotesScrollFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
     private void onQuotesLastEnd() {
-        if (!userRepository.hasBeenAskedToBuyPremium()) {
-            userRepository.markHasBeenAskedToBuyPremium();
-            startActivity(new Intent(getActivity(), AskToBuyPremiumActivity.class));
-        }
+        //if (!userRepository.hasBeenAskedToBuyPremium()) {
+        userRepository.markHasBeenAskedToBuyPremium();
+        new AlertDialog.Builder(getActivity())
+                .setPositiveButton(R.string.purchase_premium_accept_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        startActivityForResult(new Intent(getActivity(), UpgradeToPremiumActivity.class), UPDATE_TO_PREMIUM_REQUEST_CODE);
+                    }
+                })
+                .setNegativeButton(R.string.purchase_premium_dissmis_text, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .setCancelable(false)
+                .setMessage(R.string.ask_for_premium_purchase)
+                .setIcon(getResources().getDrawable(R.mipmap.ic_launcher))
+                .setTitle("    ")
+                .show();
+        // }
     }
 
     private View createQuoteView(Quote quote) {
@@ -170,7 +192,7 @@ public class QuotesScrollFragment extends Fragment {
     }
 
     private void updateQuotesProgressBar() {
-        Log.i(TAG, "quotes list iteration position " + (currentQuoteIndex + 1) + "/" + quotes.count());
+        Log.i(CommonValues.TAG, "quotes list iteration position " + (currentQuoteIndex + 1) + "/" + quotes.count());
         quotesProgressBar.setProgress(currentQuoteIndex + 1);
     }
 

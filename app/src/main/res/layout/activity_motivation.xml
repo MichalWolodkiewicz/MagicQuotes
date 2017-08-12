@@ -8,7 +8,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="motivation.widget.android.activity.MotivationActivity">
+    tools:context="motivation.widget.android.activity.MainActivity">
 
     <android.support.design.widget.TabLayout
         android:id="@+id/quotesTab"

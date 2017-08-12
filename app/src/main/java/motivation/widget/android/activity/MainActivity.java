@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import motivation.widget.android.R;
 
-public class MotivationActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="motivation.widget.android">
 
+    <uses-permission android:name="com.android.vending.BILLING" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -18,14 +20,14 @@
                 android:resource="@xml/appwidget_info" />
         </receiver>
 
-        <activity android:name=".activity.MotivationActivity">
+        <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.AskToBuyPremiumActivity" />
+        <activity android:name=".activity.UpgradeToPremiumActivity" />
     </application>
 
 </manifest>
