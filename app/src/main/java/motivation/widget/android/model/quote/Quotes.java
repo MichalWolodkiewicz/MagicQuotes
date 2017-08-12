@@ -4,6 +4,7 @@ package motivation.widget.android.model.quote;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -23,6 +24,15 @@ public class Quotes {
         }
     }
 
+    public Quotes(Collection<Integer> indexes, String[] rawQuotes) {
+        List<Quote> quotes = new ArrayList<>(indexes.size());
+        for (Integer index : indexes) {
+            final String[] quote = rawQuotes[index].split("\\|");
+            quotes.add(new Quote(index, quote[0], quote[1]));
+        }
+        this.quotes = quotes;
+    }
+
     public Iterator<Quote> getQuotesIteratorWithOffset(int offset) {
         final Iterator<Quote> iterator = quotes.iterator();
         for (int i = 0; i < offset && iterator.hasNext(); i++) {
@@ -37,5 +47,9 @@ public class Quotes {
 
     public Quote get(int position) {
         return quotes.get(position);
+    }
+
+    public void removeAt(int adapterPosition) {
+        quotes.remove(adapterPosition);
     }
 }

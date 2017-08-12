@@ -21,10 +21,12 @@ public class QuotesRepositoryImpl implements QuotesRepository {
 
     private final String[] quotesArray;
     private final SharedPreferences sharedPreferences;
+    private Set<Integer> favourites;
 
     public QuotesRepositoryImpl(Context context) {
         sharedPreferences = context.getSharedPreferences("quotes_shared", Context.MODE_PRIVATE);
         quotesArray = context.getResources().getStringArray(R.array.quotes);
+        favourites = loadFavourites();
     }
 
     @Override
@@ -64,25 +66,30 @@ public class QuotesRepositoryImpl implements QuotesRepository {
 
     @Override
     public Set<Integer> loadFavourites() {
-        String json = sharedPreferences.getString("favourites", "[]");
-        return new Gson().fromJson(json, new TypeToken<LinkedHashSet<Integer>>() {
-        }.getType());
+        if (favourites == null) {
+            String json = sharedPreferences.getString("favourites", "[]");
+            favourites = new Gson().fromJson(json, new TypeToken<LinkedHashSet<Integer>>() {
+            }.getType());
+        }
+        return favourites;
     }
 
     @Override
-    public void saveFavourites(Set<Integer> favourites) {
+    public void addToFavourites(int index) {
+        favourites.add(index);
+        String json = new Gson().toJson(favourites);
+        sharedPreferences.edit().putString("favourites", json).apply();
+    }
+
+    @Override
+    public void removeFromFavourites(int index) {
+        favourites.remove(index);
         String json = new Gson().toJson(favourites);
         sharedPreferences.edit().putString("favourites", json).apply();
     }
 
     @Override
     public Quotes loadFavouritesQuotes() {
-        Set<Integer> indexes = loadFavourites();
-        String[] rawQuotes = new String[indexes.size()];
-        int i = 0;
-        for (Integer index : indexes) {
-            rawQuotes[i++] = quotesArray[index];
-        }
-        return new Quotes(rawQuotes);
+        return new Quotes(loadFavourites(), quotesArray);
     }
 }

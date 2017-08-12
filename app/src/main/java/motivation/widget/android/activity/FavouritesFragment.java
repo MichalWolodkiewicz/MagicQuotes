@@ -1,6 +1,5 @@
 package motivation.widget.android.activity;
 
-import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -10,13 +9,12 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import motivation.widget.android.R;
+import motivation.widget.android.RepositoryProvider;
 import motivation.widget.android.model.quote.Quotes;
-import motivation.widget.android.repository.QuotesRepositoryImpl;
+import motivation.widget.android.model.quote.QuotesRepository;
 
 
 public class FavouritesFragment extends Fragment {
@@ -38,17 +36,21 @@ public class FavouritesFragment extends Fragment {
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
-        if(isVisibleToUser) {
-            Quotes quotes = new QuotesRepositoryImpl(getActivity()).loadFavouritesQuotes();
+        if (isVisibleToUser) {
+            Quotes quotes = getQuotesRepository().loadFavouritesQuotes();
             favouritesList.setAdapter(new FavouritesListAdapter(quotes));
             favouritesList.invalidate();
         }
     }
 
+    private QuotesRepository getQuotesRepository() {
+        return ((RepositoryProvider) getActivity()).getQuotesRepository();
+    }
+
     private class FavouritesListAdapter extends RecyclerView.Adapter<FavouritesListAdapter.ViewHolder> {
         private Quotes quotes;
 
-        public FavouritesListAdapter(Quotes quotes) {
+        FavouritesListAdapter(Quotes quotes) {
             this.quotes = quotes;
         }
 
@@ -81,13 +83,17 @@ public class FavouritesFragment extends Fragment {
             return 0;
         }
 
-        public class ViewHolder extends RecyclerView.ViewHolder {
+        public void removeAt(int adapterPosition) {
+            quotes.removeAt(adapterPosition);
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
 
             private TextView quote;
             private TextView author;
             private int index;
 
-            public ViewHolder(View itemView) {
+            ViewHolder(View itemView) {
                 super(itemView);
                 this.quote = (TextView) itemView.findViewById(R.id.quote);
                 this.author = (TextView) itemView.findViewById(R.id.author);
@@ -95,7 +101,7 @@ public class FavouritesFragment extends Fragment {
         }
     }
 
-    ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+    ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
 
         @Override
         public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
@@ -104,7 +110,11 @@ public class FavouritesFragment extends Fragment {
 
         @Override
         public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir) {
-            //((FavouritesListAdapter.ViewHolder)viewHolder).index;
+            if (swipeDir == ItemTouchHelper.LEFT) {
+                getQuotesRepository().removeFromFavourites(((FavouritesListAdapter.ViewHolder) viewHolder).index);
+                ((FavouritesListAdapter)favouritesList.getAdapter()).removeAt(viewHolder.getAdapterPosition());
+                favouritesList.getAdapter().notifyItemRemoved(viewHolder.getAdapterPosition());
+            }
         }
     };
 

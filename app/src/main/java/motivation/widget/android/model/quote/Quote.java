@@ -6,7 +6,6 @@ public class Quote {
     private final String author;
 
     Quote(int index, String text, String author) {
-
         this.index = index;
         this.text = text;
         this.author = author;

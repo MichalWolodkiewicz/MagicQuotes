@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -20,13 +21,13 @@ import android.widget.TextView;
 import android.widget.ViewFlipper;
 
 import java.util.Iterator;
-import java.util.Set;
 
 import motivation.widget.android.R;
+import motivation.widget.android.RepositoryProvider;
 import motivation.widget.android.activity.view.UserGuideRelativeLayout;
 import motivation.widget.android.model.quote.Quote;
 import motivation.widget.android.model.quote.Quotes;
-import motivation.widget.android.repository.QuotesRepositoryImpl;
+import motivation.widget.android.model.quote.QuotesRepository;
 import motivation.widget.android.repository.UserRepository;
 import motivation.widget.android.util.CommonValues;
 
@@ -39,11 +40,8 @@ public class QuotesScrollFragment extends Fragment {
     private Quotes quotes;
     private Iterator<Quote> quoteIterator;
     private LayoutInflater layoutInflater;
-    private QuotesRepositoryImpl quotesRepository;
     private int currentQuoteIndex;
-    private Set<Integer> favourites;
     private boolean wasInitialized;
-    private UserRepository userRepository;
 
     @Nullable
     @Override
@@ -53,17 +51,14 @@ public class QuotesScrollFragment extends Fragment {
         viewFlipper.setInAnimation(getActivity(), android.R.anim.fade_in);
         viewFlipper.setOutAnimation(getActivity(), android.R.anim.fade_out);
         quotesProgressBar = (ProgressBar) fragmentView.findViewById(R.id.quotesProgress);
-        quotesRepository = new QuotesRepositoryImpl(getActivity());
-        userRepository = new UserRepository(getActivity());
-        if (userRepository.isPremiumUser()) {
-            quotes = quotesRepository.loadAllPremiumUserQuotes();
+        if (getUserRepository().isPremiumUser()) {
+            quotes = getQuotesRepository().loadAllPremiumUserQuotes();
         } else {
-            quotes = quotesRepository.loadAllFreeUserQuotes();
+            quotes = getQuotesRepository().loadAllFreeUserQuotes();
         }
-        currentQuoteIndex = quotesRepository.getLastSeenQuoteIndex();
+        currentQuoteIndex = getQuotesRepository().getLastSeenQuoteIndex();
         quoteIterator = quotes.getQuotesIteratorWithOffset(currentQuoteIndex);
         quotesProgressBar.setMax(quotes.count());
-        favourites = quotesRepository.loadFavourites();
         layoutInflater = LayoutInflater.from(getActivity());
         loadNextQuotes();
         updateQuotesProgressBar();
@@ -75,8 +70,8 @@ public class QuotesScrollFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (!userRepository.hasUserSeenFirstTimeTips()) {
-            userRepository.setUserHasSeenFirstTimeTips();
+        if (!getUserRepository().hasUserSeenFirstTimeTips()) {
+            getUserRepository().setUserHasSeenFirstTimeTips();
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -113,8 +108,7 @@ public class QuotesScrollFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        quotesRepository.saveLastSeenQuoteIndex(currentQuoteIndex);
-        quotesRepository.saveFavourites(favourites);
+        getQuotesRepository().saveLastSeenQuoteIndex(currentQuoteIndex);
     }
 
     private void loadNextQuotes() {
@@ -135,8 +129,9 @@ public class QuotesScrollFragment extends Fragment {
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (!isVisibleToUser && wasInitialized) {
-            quotesRepository.saveLastSeenQuoteIndex(currentQuoteIndex);
-            quotesRepository.saveFavourites(favourites);
+            getQuotesRepository().saveLastSeenQuoteIndex(currentQuoteIndex);
+        } else if (wasInitialized) {
+            refreshVisibleQuoteView((ImageButton) viewFlipper.getCurrentView().findViewById(R.id.favouriteIcon), currentQuoteIndex);
         }
     }
 
@@ -147,7 +142,7 @@ public class QuotesScrollFragment extends Fragment {
 
     private void onQuotesLastEnd() {
         //if (!userRepository.hasBeenAskedToBuyPremium()) {
-        userRepository.markHasBeenAskedToBuyPremium();
+        getUserRepository().markHasBeenAskedToBuyPremium();
         new AlertDialog.Builder(getActivity())
                 .setPositiveButton(R.string.purchase_premium_accept_text, new DialogInterface.OnClickListener() {
                     @Override
@@ -173,9 +168,9 @@ public class QuotesScrollFragment extends Fragment {
         final LinearLayout quoteView = (LinearLayout) layoutInflater.inflate(R.layout.quote_view, viewFlipper, false);
         ((TextView) quoteView.findViewById(R.id.quote)).setText(quote.getText());
         ((TextView) quoteView.findViewById(R.id.author)).setText(quote.getAuthor());
-        int imageResource = favourites.contains(quote.getIndex()) ? android.R.drawable.star_on : android.R.drawable.star_off;
+        int imageResource = getQuotesRepository().loadFavourites().contains(quote.getIndex()) ? android.R.drawable.star_on : android.R.drawable.star_off;
         ImageView favouriteIcon = (ImageView) quoteView.findViewById(R.id.favouriteIcon);
-        favouriteIcon.setOnClickListener(new OnFavouriteIconClickListener(quote.getIndex(), favourites.contains(quote.getIndex())));
+        favouriteIcon.setOnClickListener(new OnFavouriteIconClickListener(quote.getIndex()));
         favouriteIcon.setImageResource(imageResource);
         return quoteView;
     }
@@ -199,23 +194,27 @@ public class QuotesScrollFragment extends Fragment {
     private class OnFavouriteIconClickListener implements View.OnClickListener {
 
         private int quoteIndex;
-        private boolean isFavourite;
 
-        OnFavouriteIconClickListener(int quoteIndex, boolean isFavourite) {
+        OnFavouriteIconClickListener(int quoteIndex) {
             this.quoteIndex = quoteIndex;
-            this.isFavourite = isFavourite;
         }
 
         @Override
         public void onClick(View v) {
-            isFavourite = !isFavourite;
-            if (isFavourite) {
-                ((ImageView) v).setImageResource(android.R.drawable.star_on);
-                favourites.add(quoteIndex);
+            if (!getQuotesRepository().loadFavourites().contains(quoteIndex)) {
+                getQuotesRepository().addToFavourites(quoteIndex);
             } else {
-                ((ImageView) v).setImageResource(android.R.drawable.star_off);
-                favourites.remove(quoteIndex);
+                getQuotesRepository().removeFromFavourites(quoteIndex);
             }
+            refreshVisibleQuoteView((ImageButton) v, quoteIndex);
+        }
+    }
+
+    private void refreshVisibleQuoteView(ImageButton favouriteIcon, int quoteIndex) {
+        if (getQuotesRepository().loadFavourites().contains(quoteIndex)) {
+            favouriteIcon.setImageResource(android.R.drawable.star_on);
+        } else {
+            favouriteIcon.setImageResource(android.R.drawable.star_off);
         }
     }
 
@@ -241,5 +240,13 @@ public class QuotesScrollFragment extends Fragment {
                 activityRoot.removeView(userGuideView);
             }
         }
+    }
+
+    private UserRepository getUserRepository() {
+        return ((RepositoryProvider) getActivity()).getUserRepository();
+    }
+
+    private QuotesRepository getQuotesRepository() {
+        return ((RepositoryProvider) getActivity()).getQuotesRepository();
     }
 }
