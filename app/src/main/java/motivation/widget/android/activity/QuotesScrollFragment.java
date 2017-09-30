@@ -31,6 +31,8 @@ import motivation.widget.android.model.quote.QuotesRepository;
 import motivation.widget.android.repository.UserRepository;
 import motivation.widget.android.util.CommonValues;
 
+import static android.app.Activity.RESULT_OK;
+
 
 public class QuotesScrollFragment extends Fragment {
 
@@ -39,7 +41,6 @@ public class QuotesScrollFragment extends Fragment {
     private ProgressBar quotesProgressBar;
     private Quotes quotes;
     private Iterator<Quote> quoteIterator;
-    private LayoutInflater layoutInflater;
     private int currentQuoteIndex;
     private boolean wasInitialized;
 
@@ -51,6 +52,13 @@ public class QuotesScrollFragment extends Fragment {
         viewFlipper.setInAnimation(getActivity(), android.R.anim.fade_in);
         viewFlipper.setOutAnimation(getActivity(), android.R.anim.fade_out);
         quotesProgressBar = (ProgressBar) fragmentView.findViewById(R.id.quotesProgress);
+        refreshQuotesView();
+        fragmentView.findViewById(R.id.nextQuote).setOnClickListener(new NextQuoteButtonOnClickListener());
+        wasInitialized = true;
+        return fragmentView;
+    }
+
+    private void refreshQuotesView() {
         if (getUserRepository().isPremiumUser()) {
             quotes = getQuotesRepository().loadAllPremiumUserQuotes();
         } else {
@@ -59,12 +67,8 @@ public class QuotesScrollFragment extends Fragment {
         currentQuoteIndex = getQuotesRepository().getLastSeenQuoteIndex();
         quoteIterator = quotes.getQuotesIteratorWithOffset(currentQuoteIndex);
         quotesProgressBar.setMax(quotes.count());
-        layoutInflater = LayoutInflater.from(getActivity());
         loadNextQuotes();
         updateQuotesProgressBar();
-        fragmentView.findViewById(R.id.nextQuote).setOnClickListener(new NextQuoteButtonOnClickListener());
-        wasInitialized = true;
-        return fragmentView;
     }
 
     @Override
@@ -138,34 +142,52 @@ public class QuotesScrollFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == UPDATE_TO_PREMIUM_REQUEST_CODE && resultCode == RESULT_OK) {
+            refreshQuotesView();
+            thanksForPurchaseExtraPack();
+        }
     }
 
-    private void onQuotesLastEnd() {
-        //if (!userRepository.hasBeenAskedToBuyPremium()) {
-        getUserRepository().markHasBeenAskedToBuyPremium();
+    private void thanksForPurchaseExtraPack() {
         new AlertDialog.Builder(getActivity())
-                .setPositiveButton(R.string.purchase_premium_accept_text, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        startActivityForResult(new Intent(getActivity(), UpgradeToPremiumActivity.class), UPDATE_TO_PREMIUM_REQUEST_CODE);
-                    }
-                })
-                .setNegativeButton(R.string.purchase_premium_dissmis_text, new DialogInterface.OnClickListener() {
+                .setMessage(R.string.thanksForPurchasePremium)
+                .setIcon(getResources().getDrawable(R.mipmap.ic_launcher))
+                .setTitle("    ")
+                .setNeutralButton(R.string.close, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
                     }
                 })
-                .setCancelable(false)
-                .setMessage(R.string.ask_for_premium_purchase)
-                .setIcon(getResources().getDrawable(R.mipmap.ic_launcher))
-                .setTitle("    ")
                 .show();
-        // }
+    }
+
+    private void onQuotesLastEnd() {
+        if (!getUserRepository().hasBeenAskedToBuyPremium() && !getUserRepository().isPremiumUser()) {
+            getUserRepository().markHasBeenAskedToBuyPremium();
+            new AlertDialog.Builder(getActivity())
+                    .setPositiveButton(R.string.purchase_premium_accept_text, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startActivityForResult(new Intent(getActivity(), UpgradeToPremiumActivity.class), UPDATE_TO_PREMIUM_REQUEST_CODE);
+                        }
+                    })
+                    .setNegativeButton(R.string.purchase_premium_dissmis_text, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .setCancelable(false)
+                    .setMessage(R.string.ask_for_premium_purchase)
+                    .setIcon(getResources().getDrawable(R.mipmap.ic_launcher))
+                    .setTitle("    ")
+                    .show();
+        }
     }
 
     private View createQuoteView(Quote quote) {
-        final LinearLayout quoteView = (LinearLayout) layoutInflater.inflate(R.layout.quote_view, viewFlipper, false);
+        final LinearLayout quoteView = (LinearLayout) getActivity().getLayoutInflater().inflate(R.layout.quote_view, viewFlipper, false);
         ((TextView) quoteView.findViewById(R.id.quote)).setText(quote.getText());
         ((TextView) quoteView.findViewById(R.id.author)).setText(quote.getAuthor());
         int imageResource = getQuotesRepository().loadFavourites().contains(quote.getIndex()) ? android.R.drawable.star_on : android.R.drawable.star_off;
@@ -176,14 +198,15 @@ public class QuotesScrollFragment extends Fragment {
     }
 
     private void showNextQuote() {
-        if (viewFlipper.getDisplayedChild() == viewFlipper.getChildCount() - 1) {
+        /*if (viewFlipper.getDisplayedChild() == viewFlipper.getChildCount() - 1) {
             ++currentQuoteIndex;
             loadNextQuotes();
         } else {
             viewFlipper.showNext();
             ++currentQuoteIndex;
         }
-        updateQuotesProgressBar();
+        updateQuotesProgressBar();*/
+        startActivityForResult(new Intent(getActivity(), UpgradeToPremiumActivity.class), UPDATE_TO_PREMIUM_REQUEST_CODE);
     }
 
     private void updateQuotesProgressBar() {

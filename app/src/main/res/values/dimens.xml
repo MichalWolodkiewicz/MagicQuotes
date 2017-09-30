@@ -11,4 +11,5 @@
     <dimen name="add_to_favourites_tip_padding">5dp</dimen>
     <dimen name="favourite_icon_bottom_margin">12dp</dimen>
     <dimen name="favourite_quote_padding_vertical">10dp</dimen>
+    <dimen name="purchase_icon_bottom_margin">30dp</dimen>
 </resources>

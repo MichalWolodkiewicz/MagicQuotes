@@ -37,7 +37,7 @@ public class FavouritesFragment extends Fragment {
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (isVisibleToUser) {
-            Quotes quotes = getQuotesRepository().loadFavouritesQuotes();
+            Quotes quotes = getQuotesRepository().loadReversedFavourites();
             favouritesList.setAdapter(new FavouritesListAdapter(quotes));
             favouritesList.invalidate();
         }

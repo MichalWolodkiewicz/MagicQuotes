@@ -22,5 +22,5 @@ public interface QuotesRepository {
 
     void removeFromFavourites(int index);
 
-    Quotes loadFavouritesQuotes();
+    Quotes loadReversedFavourites();
 }

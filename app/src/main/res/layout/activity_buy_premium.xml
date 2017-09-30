@@ -10,25 +10,78 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="motivation.widget.android.activity.UpgradeToPremiumActivity">
 
-    <TextView
-        android:id="@+id/upgrade_to_premium_benefits"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="@string/upgrade_to_premium_benefits" />
+    <RelativeLayout
+        android:id="@+id/purchase_loading_panel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible">
 
-    <TextView
-        android:id="@+id/premiumPrice"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/upgrade_to_premium_benefits" />
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true" />
+    </RelativeLayout>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:onClick="startPurchaseFlow"
-        android:text="@string/purchase_premium_quotes_button" />
+    <RelativeLayout
+        android:id="@+id/error_panel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible">
+
+        <ImageView
+            android:id="@+id/errorIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/stat_notify_error"
+            android:tint="@android:color/black"
+            android:layout_centerInParent="true"/>
+
+        <TextView
+            android:id="@+id/errorTextView"
+            android:layout_width="match_parent"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/errorIcon"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/purchase_panel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible">
+
+        <TextView
+            android:id="@+id/upgrade_to_premium_benefits"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:text="@string/upgrade_to_premium_benefits" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/upgrade_to_premium_benefits"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="@dimen/purchase_icon_bottom_margin"
+            android:src="@mipmap/ic_launcher" />
+
+        <TextView
+            android:id="@+id/premiumPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/upgrade_to_premium_benefits"
+            android:gravity="center" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:onClick="startPurchaseFlow"
+            android:text="@string/purchase_premium_quotes_button"
+            android:theme="@style/ButtonStyle" />
+    </RelativeLayout>
 
 </RelativeLayout>

@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -71,7 +72,7 @@ public class QuotesRepositoryImpl implements QuotesRepository {
             favourites = new Gson().fromJson(json, new TypeToken<LinkedHashSet<Integer>>() {
             }.getType());
         }
-        return favourites;
+        return new LinkedHashSet<>(favourites);
     }
 
     @Override
@@ -89,7 +90,12 @@ public class QuotesRepositoryImpl implements QuotesRepository {
     }
 
     @Override
-    public Quotes loadFavouritesQuotes() {
-        return new Quotes(loadFavourites(), quotesArray);
+    public Quotes loadReversedFavourites() {
+        ArrayList<Integer> copy = new ArrayList<>(loadFavourites());
+        LinkedHashSet<Integer> reversedFavourites = new LinkedHashSet<>(copy.size());
+        for (int i = copy.size() - 1; i > -1; i--) {
+            reversedFavourites.add(copy.get(i));
+        }
+        return new Quotes(reversedFavourites, quotesArray);
     }
 }

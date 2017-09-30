@@ -5,10 +5,15 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import motivation.widget.android.R;
 import motivation.widget.android.model.price.Price;
+import motivation.widget.android.repository.UserRepository;
 import motivation.widget.android.util.CommonValues;
 import motivation.widget.android.util.iab.IabHelper;
 import motivation.widget.android.util.iab.IabResult;
@@ -24,11 +29,15 @@ public class UpgradeToPremiumActivity extends AppCompatActivity {
 
     private IabHelper iabHelper;
     private boolean billingServiceBounded;
+    private Panels panels;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setResult(RESULT_CANCELED);
         setContentView(R.layout.activity_buy_premium);
+        panels = new Panels();
+        panels.showLoadingPanel();
         iabHelper = new IabHelper(this.getApplicationContext(), KEY);
         iabHelper.startSetup(onIabSetupFinishedListener);
     }
@@ -39,20 +48,27 @@ public class UpgradeToPremiumActivity extends AppCompatActivity {
             if (result.getResponse() == IabHelper.BILLING_RESPONSE_RESULT_OK) {
                 iabHelper.enableDebugLogging(true, CommonValues.TAG);
                 billingServiceBounded = true;
-                readSubscriptionPrice();
+                readPremiumQuotesPrice();
+            } else {
+                Log.i(CommonValues.TAG, "Error occurred while initialize billing service. Result code = " + result.getResponse() + ". Response message = " + result.getMessage());
+                panels.showErrorPanel(result.getMessage());
             }
         }
     };
 
-    private void readSubscriptionPrice() {
+    private void readPremiumQuotesPrice() {
+        List<String> moreItemSkus = new ArrayList<>(1);
+        moreItemSkus.add("premium_quotes");
         try {
-            iabHelper.queryInventoryAsync(true, null, null, new IabHelper.QueryInventoryFinishedListener() {
+            iabHelper.queryInventoryAsync(true, moreItemSkus, null, new IabHelper.QueryInventoryFinishedListener() {
                 @Override
                 public void onQueryInventoryFinished(IabResult result, Inventory inv) {
                     if (inv.hasDetails("premium_quotes")) {
                         SkuDetails skuDetails = inv.getSkuDetails("premium_quotes");
                         Price price = new Price(skuDetails.getPriceAmountMicros(), skuDetails.getPriceCurrencyCode());
-                        ((TextView) findViewById(R.id.premiumPrice)).setText(price.getYearPrice() + " " + price.getCurrencyCode());
+                        String pricePerItem = price.getYearPrice() + " " + price.getCurrencyCode();
+                        ((TextView) findViewById(R.id.premiumPrice)).setText(getResources().getString(R.string.premium_price, pricePerItem));
+                        panels.showPurchasePanel();
                     }
                 }
             });
@@ -64,10 +80,15 @@ public class UpgradeToPremiumActivity extends AppCompatActivity {
 
     private void launchPurchaseFlow() {
         try {
-            iabHelper.launchPurchaseFlow(UpgradeToPremiumActivity.this, "hc_one_year_premium", SUBSCRIBE_REQUEST_CODE, new IabHelper.OnIabPurchaseFinishedListener() {
+            iabHelper.launchPurchaseFlow(UpgradeToPremiumActivity.this, "premium_quotes", SUBSCRIBE_REQUEST_CODE, new IabHelper.OnIabPurchaseFinishedListener() {
                 @Override
                 public void onIabPurchaseFinished(IabResult result, Purchase info) {
-                    if (result.getResponse() == IabHelper.BILLING_RESPONSE_RESULT_OK) {
+                    if (result.getResponse() == IabHelper.BILLING_RESPONSE_RESULT_ITEM_ALREADY_OWNED) {
+                        setResult(RESULT_OK);
+                        finish();
+                    } else if (result.getResponse() == IabHelper.BILLING_RESPONSE_RESULT_OK) {
+                        setResult(RESULT_OK);
+                        new UserRepository(getApplicationContext()).setIsPremium();
                         finish();
                     } else {
                         Log.e(CommonValues.TAG, result.getMessage());
@@ -103,5 +124,39 @@ public class UpgradeToPremiumActivity extends AppCompatActivity {
 
     public void startPurchaseFlow(View view) {
         launchPurchaseFlow();
+    }
+
+    private class Panels {
+
+        private RelativeLayout errorPanel;
+        private RelativeLayout loadingPanel;
+        private RelativeLayout purchasePanel;
+        private TextView errorTextView;
+
+        Panels() {
+            errorPanel = (RelativeLayout) findViewById(R.id.error_panel);
+            purchasePanel = (RelativeLayout) findViewById(R.id.purchase_panel);
+            loadingPanel = (RelativeLayout) findViewById(R.id.purchase_loading_panel);
+            errorTextView = (TextView) findViewById(R.id.errorTextView);
+        }
+
+        void showErrorPanel(String message) {
+            errorPanel.setVisibility(View.VISIBLE);
+            purchasePanel.setVisibility(View.INVISIBLE);
+            loadingPanel.setVisibility(View.INVISIBLE);
+            errorTextView.setText(message);
+        }
+
+        void showLoadingPanel() {
+            errorPanel.setVisibility(View.INVISIBLE);
+            purchasePanel.setVisibility(View.INVISIBLE);
+            loadingPanel.setVisibility(View.VISIBLE);
+        }
+
+        void showPurchasePanel() {
+            errorPanel.setVisibility(View.INVISIBLE);
+            purchasePanel.setVisibility(View.VISIBLE);
+            loadingPanel.setVisibility(View.INVISIBLE);
+        }
     }
 }
