@@ -47,7 +47,7 @@ public class QuotesRepositoryImpl implements QuotesRepository {
 
     @Override
     public Quotes loadAllFreeUserQuotes() {
-        return new Quotes(Arrays.copyOfRange(quotesArray, 0, quotesArray.length / 200));
+        return new Quotes(Arrays.copyOfRange(quotesArray, 0, quotesArray.length));
     }
 
     @Override

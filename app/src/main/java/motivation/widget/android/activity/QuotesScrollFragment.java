@@ -125,7 +125,7 @@ public class QuotesScrollFragment extends Fragment {
         if (!quoteIterator.hasNext()) {
             currentQuoteIndex = 0;
             quoteIterator = quotes.getQuotesIteratorWithOffset(0);
-            onQuotesLastEnd();
+            //onQuotesLastEnd();
         }
     }
 
