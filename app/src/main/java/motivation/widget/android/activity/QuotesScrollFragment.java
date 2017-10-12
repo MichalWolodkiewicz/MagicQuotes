@@ -198,15 +198,14 @@ public class QuotesScrollFragment extends Fragment {
     }
 
     private void showNextQuote() {
-        /*if (viewFlipper.getDisplayedChild() == viewFlipper.getChildCount() - 1) {
+        if (viewFlipper.getDisplayedChild() == viewFlipper.getChildCount() - 1) {
             ++currentQuoteIndex;
             loadNextQuotes();
         } else {
             viewFlipper.showNext();
             ++currentQuoteIndex;
         }
-        updateQuotesProgressBar();*/
-        startActivityForResult(new Intent(getActivity(), UpgradeToPremiumActivity.class), UPDATE_TO_PREMIUM_REQUEST_CODE);
+        updateQuotesProgressBar();
     }
 
     private void updateQuotesProgressBar() {
